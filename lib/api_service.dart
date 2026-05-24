@@ -9,7 +9,7 @@ class ApiService {
   static const String _baseUrl = 'http://192.168.1.21:8000';
 
   /// Sends a captured image file to the backend for trash analysis.
-  /// Returns a Map with: has_trash, trash_category, confidence
+  /// Returns a Map with: has_trash, trash_type, trash_category, confidence, bin_color, instruction
   static Future<Map<String, dynamic>> analyzeImage(File imageFile) async {
     try {
       // Read the image file and convert to base64
@@ -32,8 +32,11 @@ class ApiService {
           'error': true,
           'message': 'Server error: ${response.statusCode}',
           'has_trash': false,
+          'trash_type': 'none',
           'trash_category': 'error',
           'confidence': 0.0,
+          'bin_color': 'none',
+          'instruction': '',
         };
       }
     } on SocketException {
@@ -41,16 +44,22 @@ class ApiService {
         'error': true,
         'message': 'Cannot connect to server. Is the backend running?',
         'has_trash': false,
+        'trash_type': 'none',
         'trash_category': 'error',
         'confidence': 0.0,
+        'bin_color': 'none',
+        'instruction': '',
       };
     } catch (e) {
       return {
         'error': true,
         'message': 'Error: $e',
         'has_trash': false,
+        'trash_type': 'none',
         'trash_category': 'error',
         'confidence': 0.0,
+        'bin_color': 'none',
+        'instruction': '',
       };
     }
   }

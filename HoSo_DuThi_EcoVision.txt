@@ -1,0 +1,50 @@
+# HỒ SƠ DỰ THI CUỘC THI SÁNG TẠO THANH THIẾU NIÊN, NHI ĐỒNG 2026
+
+## PHẦN 1: PHIẾU ĐĂNG KÝ (Dự thảo)
+
+- Tên dự án: EcoVision – Ứng dụng nhận diện và phân loại rác thải thông minh bằng AI.
+- Lĩnh vực: Phần mềm tin học / Bảo vệ môi trường.
+- Tác giả: [Họ và tên học sinh]
+- Trường: [Tên trường THCS]
+
+---
+
+## PHẦN 2: BẢN THUYẾT MINH CHI TIẾT
+
+### 1. Ý tưởng và Tính cấp thiết
+Dự án được xây dựng dựa trên nhu cầu thực tế về việc phân loại rác tại nguồn theo quy định mới 2025-2026 của TP. Hồ Chí Minh. Ứng dụng giúp xóa bỏ sự nhầm lẫn trong việc phân loại rác sinh hoạt hàng ngày thông qua công nghệ trí tuệ nhân tạo.
+
+### 2. Các tính năng chính
+- **Nhận diện thông minh:** Tự động phát hiện rác trong khung hình.
+- **Phân loại chính xác:** Chia rác thành 4 nhóm chính (Tái chế, Hữu cơ, Vô cơ, Nguy hại).
+- **Hướng dẫn xử lý:** Đưa ra lời khuyên cụ thể bằng tiếng Việt (ví dụ: "Bỏ vào thùng cam", "Thu gom riêng để bán ve chai").
+- **Độ tin cậy:** Hiển thị phần trăm độ chính xác của AI khi nhận diện.
+- **Lưu trữ lịch sử:** Ghi lại các lần quét để người dùng theo dõi thói quen sống xanh.
+
+### 3. Giải pháp Kỹ thuật
+- **Frontend (Giao diện):** Flutter & Dart. Xây dựng ứng dụng di động mượt mà, hỗ trợ camera thời gian thực.
+- **Backend (Máy chủ):** FastAPI (Python). Xử lý dữ liệu trung gian, quản lý cơ sở dữ liệu.
+- **Trí tuệ nhân tạo (AI):** Sử dụng mô hình **Google Gemini 2.0 Flash**. Đây là mô hình AI Vision tiên tiến, có khả năng hiểu hình ảnh cực tốt và tốc độ phản hồi nhanh.
+- **Quy trình xử lý AI:** 
+  1. Phân tích hình ảnh để xác định sự hiện diện của rác.
+  2. Áp dụng thuật toán phân loại dựa trên "Prompt Engineering" (Kỹ thuật đặt câu hỏi cho AI) để tuân thủ đúng quy định địa phương.
+  3. Trả về kết quả dạng JSON chuẩn để ứng dụng hiển thị chính xác.
+- **Cơ sở dữ liệu:** PostgreSQL lưu trữ lịch sử và hình ảnh (dạng base64/link).
+
+### 4. Những khó khăn đã vượt qua
+- **Xử lý dữ liệu AI:** Viết mã lệnh để lọc và làm sạch dữ liệu AI trả về (loại bỏ các ký tự thừa từ định dạng Markdown).
+- **Kết nối hệ thống:** Cấu hình địa chỉ IP tĩnh để điện thoại Android có thể giao tiếp ổn định với máy chủ Python trong mạng nội bộ.
+- **Tối ưu hóa Prompt:** Thiết lập bộ quy tắc nghiêm ngặt để AI không nhầm lẫn giữa rác vô cơ và rác nguy hại.
+
+### 5. Tính mới và Sáng tạo
+- **Tính địa phương:** Ứng dụng duy nhất cập nhật sát sao quy định 4 nhóm rác của TP.HCM.
+- **Công nghệ hiện đại:** Sử dụng Gemini 2.0 Flash - công nghệ AI hàng đầu hiện nay.
+- **Giao diện thân thiện:** Màu sắc thùng rác trong app (Xanh lá, Cam, Xanh dương, Đỏ) khớp hoàn toàn với thực tế, giúp người dùng dễ liên tưởng.
+
+### 6. Hướng phát triển tương lai
+- Thống kê lượng rác đã phân loại theo tuần/tháng.
+- Tích hợp bản đồ các điểm thu gom rác nguy hại (pin, đồ điện tử cũ).
+- Tính năng quét liên tục không cần nhấn nút chụp.
+
+---
+*Tài liệu này được soạn thảo dựa trên báo cáo tổng quan dự án EcoVision.*

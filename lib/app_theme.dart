@@ -18,7 +18,7 @@ class AppTheme {
   }
 
   // --- Reusable Styles for Camera Screen ---
-  
+
   static const TextStyle titleStyle = TextStyle(
     color: Colors.white,
     fontSize: 24,

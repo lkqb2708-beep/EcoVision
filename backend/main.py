@@ -5,6 +5,9 @@ stores them in PostgreSQL, and calls Trashy AI for trash detection.
 Run with:
     uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 """
+from dotenv import load_dotenv
+load_dotenv()  # Load GEMINI_API_KEY from backend/.env
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from database import init_db, save_scan, get_all_scans
@@ -21,17 +24,20 @@ class AnalyzeRequest(BaseModel):
 class AnalyzeResponse(BaseModel):
     id: int
     has_trash: bool
+    trash_type: str
     trash_category: str
     confidence: float
+    bin_color: str
+    instruction: str
 
 
 # ── Startup event ────────────────────────────────────────────
 @app.on_event("startup")
 def on_startup():
     """Initialize database table on server start."""
-    print("🚀 Starting Trashy backend...")
+    print("Starting Trashy backend...")
     init_db()
-    print("🚀 Trashy backend is ready!")
+    print("Trashy backend is ready!")
 
 
 # ── Endpoints ────────────────────────────────────────────────
@@ -54,36 +60,48 @@ async def analyze(request: AnalyzeRequest):
     if len(request.image_base64) > 15_000_000:
         raise HTTPException(status_code=400, detail="Image too large (max ~10MB)")
 
-    print(f"📸 Received image ({len(request.image_base64)} chars of base64)")
+    print(f"Received image ({len(request.image_base64)} chars of base64)")
 
     # Step 1: Call Trashy AI to analyze the image
-    print("🤖 Sending to Trashy AI for analysis...")
+    print("Sending to Trashy AI for analysis...")
     result = await analyze_image(request.image_base64)
 
-    has_trash = result["has_trash"]
+    has_trash     = result["has_trash"]
+    trash_type    = result.get("trash_type", "none")
     trash_category = result["trash_category"]
-    confidence = result["confidence"]
+    confidence    = result["confidence"]
+    bin_color     = result.get("bin_color", "none")
+    instruction   = result.get("instruction", "")
 
-    print(f"🤖 Trashy says: has_trash={has_trash}, category={trash_category}, confidence={confidence}")
+    print(
+        f"Trashy says: has_trash={has_trash}, type={trash_type}, "
+        f"category={trash_category}, confidence={confidence}, bin={bin_color}"
+    )
 
     # Step 2: Save to PostgreSQL
     try:
         scan_id = save_scan(
             image_base64=request.image_base64,
             has_trash=has_trash,
+            trash_type=trash_type,
             trash_category=trash_category,
             confidence=confidence,
+            bin_color=bin_color,
+            instruction=instruction,
         )
     except Exception as e:
-        print(f"❌ Database error: {e}")
+        print(f"Database error: {e}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
     # Step 3: Return result to Flutter app
     return AnalyzeResponse(
         id=scan_id,
         has_trash=has_trash,
+        trash_type=trash_type,
         trash_category=trash_category,
         confidence=confidence,
+        bin_color=bin_color,
+        instruction=instruction,
     )
 
 

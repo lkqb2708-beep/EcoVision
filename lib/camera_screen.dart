@@ -352,79 +352,259 @@ class _CameraScreenState extends State<CameraScreen> {
     );
   }
 
+  // ── helpers ─────────────────────────────────────────────────
+
+  /// Returns visual style for each HCMC waste type.
+  Map<String, dynamic> _styleForType(String trashType) {
+    switch (trashType) {
+      case 'tai_che':
+        return {
+          'label':   'Rác Tái Chế',
+          'sublabel': 'Recyclable Waste',
+          'icon':    Icons.recycling_rounded,
+          'bg':      const Color(0xFFEFF6FF),
+          'color':   const Color(0xFF1D4ED8),
+          'binHint': 'Thu gom riêng – bán hoặc cho ve chai',
+          'binIcon': Icons.sell_rounded,
+        };
+      case 'huu_co':
+        return {
+          'label':   'Rác Hữu Cơ',
+          'sublabel': 'Organic / Food Waste',
+          'icon':    Icons.eco_rounded,
+          'bg':      const Color(0xFFF0FDF4),
+          'color':   const Color(0xFF15803D),
+          'binHint': 'Thùng màu XANH',
+          'binIcon': Icons.delete_outline_rounded,
+        };
+      case 'vo_co':
+        return {
+          'label':   'Rác Vô Cơ',
+          'sublabel': 'Non-Recyclable Waste',
+          'icon':    Icons.delete_sweep_rounded,
+          'bg':      const Color(0xFFFFF7ED),
+          'color':   const Color(0xFFC2410C),
+          'binHint': 'Thùng màu CAM',
+          'binIcon': Icons.delete_rounded,
+        };
+      case 'nguy_hai':
+        return {
+          'label':   'Rác Nguy Hại',
+          'sublabel': 'Hazardous Waste',
+          'icon':    Icons.warning_amber_rounded,
+          'bg':      const Color(0xFFFEF2F2),
+          'color':   const Color(0xFFB91C1C),
+          'binHint': 'Để RIÊNG – không trộn rác sinh hoạt',
+          'binIcon': Icons.report_problem_rounded,
+        };
+      default: // no trash
+        return {
+          'label':   'Sạch',
+          'sublabel': 'No Trash Detected',
+          'icon':    Icons.check_circle_outline_rounded,
+          'bg':      const Color(0xFFF0FDF4),
+          'color':   const Color(0xFF16A34A),
+          'binHint': '',
+          'binIcon': Icons.check_rounded,
+        };
+    }
+  }
+
   Widget _buildResultCard() {
-    final hasTrash = _analysisResult!['has_trash'] as bool;
-    final category = _analysisResult!['trash_category'] as String;
+    final hasTrash  = _analysisResult!['has_trash'] as bool;
+    final trashType = (_analysisResult!['trash_type'] as String?) ?? 'none';
+    final category  = (_analysisResult!['trash_category'] as String?) ?? '';
     final confidence = (_analysisResult!['confidence'] as num).toDouble();
+    final instruction = (_analysisResult!['instruction'] as String?) ?? '';
     final confidencePercent = (confidence * 100).toStringAsFixed(0);
 
-    // Color logic
-    final bgColor = hasTrash ? const Color(0xFFFEF2F2) : const Color(0xFFF0FDF4);
-    final primaryColor = hasTrash ? const Color(0xFFDC2626) : const Color(0xFF16A34A);
-    final icon = hasTrash ? Icons.delete_sweep_rounded : Icons.eco_rounded;
-    final titleText = hasTrash ? 'Trash Detected' : 'Clean Area';
+    final style = _styleForType(hasTrash ? trashType : 'none');
+    final Color primaryColor = style['color'] as Color;
+    final Color bgColor      = style['bg']    as Color;
 
     return Container(
-      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: primaryColor.withOpacity(0.2), width: 2),
+        border: Border.all(color: primaryColor.withOpacity(0.25), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: 48, color: primaryColor),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            titleText,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: primaryColor,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (hasTrash)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                category.toUpperCase(),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
-                  color: primaryColor,
-                  fontSize: 13,
+          // ── STEP 1: Has Trash? ────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(style['icon'] as IconData, size: 36, color: primaryColor),
                 ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hasTrash ? 'Phát hiện rác!' : 'Không có rác',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      Text(
+                        hasTrash ? 'Trash detected' : 'Clean area',
+                        style: TextStyle(fontSize: 13, color: primaryColor.withOpacity(0.7)),
+                      ),
+                    ],
+                  ),
+                ),
+                // Confidence badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.analytics_rounded, size: 14, color: primaryColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$confidencePercent%',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          if (hasTrash) ...[
+            const SizedBox(height: 16),
+            Divider(color: primaryColor.withOpacity(0.15), height: 1, indent: 24, endIndent: 24),
+
+            // ── STEP 2: Waste Classification ─────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Type label
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              style['label'] as String,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                              ),
+                            ),
+                            Text(
+                              style['sublabel'] as String,
+                              style: TextStyle(fontSize: 12, color: primaryColor.withOpacity(0.65)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Specific item chip
+                      if (category.isNotEmpty && category != 'none')
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: primaryColor.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            category,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: primaryColor,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Bin hint row
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(style['binIcon'] as IconData, size: 18, color: primaryColor),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            style['binHint'] as String,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: primaryColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Instruction box
+                  if (instruction.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: primaryColor.withOpacity(0.15)),
+                      ),
+                      child: Text(
+                        instruction,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade700,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
+          ],
+
           const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.analytics_rounded, size: 20, color: Colors.grey.shade600),
-              const SizedBox(width: 8),
-              Text(
-                'Confidence: $confidencePercent%',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ],
-          )
         ],
       ),
     );
